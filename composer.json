@@ -1,0 +1,25 @@
+{
+  "name": "tsrgtm/maintenance-mode",
+  "description": "A Laravel middleware package for maintenance mode",
+  "type": "library",
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^11.41"
+  },
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Tsrgtm\\MaintenanceMode\\": "src/"
+    },
+    "files": [
+      "src/Helpers/maintenance.php"
+    ]
+  },
+  "authors": [
+    {
+      "name": "tsrgtm",
+      "email": "gautamtusar2@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable"
+}
