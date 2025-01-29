@@ -1,180 +1,192 @@
-# Laravel Maintenance Mode Package
+# 🔧 Laravel Maintenance Mode Package
 
-## Introduction
+_A robust solution for managing maintenance mode in Laravel applications with fine-grained control and elegant customization_
 
-The Laravel Maintenance Mode package provides an easy way to manage maintenance mode in your Laravel application. It includes commands for toggling maintenance mode, checking the current status, and ensuring that the necessary environment variable is set in the `.env` file.
+---
 
-## Features
+## 📖 Table of Contents
 
-- Toggle maintenance mode on or off using Artisan commands.
-- Check if maintenance mode is enabled or disabled.
-- Automatically adds `MAINTENANCE_MODE` to the `.env` file if it doesn't exist.
-- Publishable configuration and view files.
+1. [Introduction](#-introduction)
+2. [Key Features](#-key-features)
+3. [Installation](#-installation)
+4. [Configuration](#-configuration)  
+   4.1 [Middleware Setup](#middleware-setup)  
+   4.2 [Publishing Assets](#publishing-assets)  
+   4.3 [Configuration Options](#configuration-options)
+5. [Usage](#-usage)  
+   5.1 [Artisan Commands](#artisan-commands)  
+   5.2 [Helper Functions](#helper-functions)  
+   5.3 [Bypass Mechanism](#bypass-mechanism)
+6. [Customization](#-customization)
+7. [Contributing](#-contributing)
+8. [License](#-license)
+9. [Author](#-author)
 
-## Installation
+---
 
-You can install the package via Composer. Run the following command:
+## 🌟 Introduction
+
+The Laravel Maintenance Mode package provides enterprise-grade maintenance mode management for Laravel applications. Features include environment-based configuration, granular access control, and seamless integration with Laravel's ecosystem.
+
+---
+
+## 🚩 Key Features
+
+- ⚡ Instant toggle via Artisan commands
+- 🔐 Role-based access control
+- 🛣 Route/URL whitelisting
+- 🎭 Customizable maintenance pages
+- 📊 Environment variable sync
+- 👮 Middleware access control
+- 🔍 Real-time status checks
+
+---
+
+## 🚀 Installation
 
 ```bash
 composer require tsrgtm/maintenance-mode
 ```
 
-## Middleware
+---
 
-### Register Middleware in Laravel 11.x
+## 🛠 Configuration
 
-If you want a middleware to run during every HTTP request to your application, you may append it to the global middleware stack in your application's 'bootstrap/app.php' file:
+### Middleware Setup
+
+**Global registration (Laravel 11+)** in `bootstrap/app.php`:
 
 ```php
 use Tsrgtm\MaintenanceMode\Middleware\MaintenanceModeMiddleware;
 
 ->withMiddleware(function (Middleware $middleware) {
-     $middleware->append(MaintenanceModeMiddleware::class);
+    $middleware->append(MaintenanceModeMiddleware::class);
 })
 ```
 
-OR
-
-If you would like to assign middleware to specific routes, you may invoke the middleware method when defining the route:
+**Route-specific registration**:
 
 ```php
-use Tsrgtm\MaintenanceMode\Middleware\MaintenanceModeMiddleware;
-
-Route::get('/profile', function () {
-    // ...
-})->middleware(MaintenanceModeMiddleware::class);
+Route::get('/admin', fn() => view('admin'))->middleware(MaintenanceModeMiddleware::class);
 ```
 
-### Publish Configuration and Views
-
-To publish the configuration and view files, run:
+### Publishing Assets
 
 ```bash
 php artisan vendor:publish --tag=config
 php artisan vendor:publish --tag=views
 ```
 
-## Configuration
+### Configuration Options
 
-After publishing, you can find the configuration file at `config/maintenance.php`. In this file, you can control the following settings:
-
-- **enabled**: This option determines whether the maintenance mode is enabled or disabled. It retrieves its value from the `.env` file using the `MAINTENANCE_MODE` environment variable. If the variable is not set, it defaults to `false` (maintenance mode is off).
-
-  ```php
-  'enabled' => env('MAINTENANCE_MODE', false),
-  ```
-
-- **view**: This specifies the default view that should be displayed when the application is in maintenance mode. By default, it uses the `maintenance::default` view, which can be customized in your application.
-
-  ```php
-  'view' => 'maintenance::default',
-  ```
-
-  **Example**:
-
-  ```php
-  'view' => 'components.custom-maintenance', //user can define custom view
-  ```
-
-- **allowed_routes**: This is an array where you can define specific route names that should remain accessible even when the application is in maintenance mode. For example, you might want to allow access to a maintenance notification route or an emergency contact route.
-
-  ```php
-  'allowed_routes' => [],
-  ```
-
-  **Example**:
-
-  ```php
-  'allowed_routes' => ['login', 'register', 'about'], // Users can access these routes
-  ```
-
-- **allowed_urls**: Similar to `allowed_routes`, this array allows you to specify certain URLs that can be accessed during maintenance mode. This is useful for providing access to API endpoints or other critical resources while the rest of the application is offline.
-
-  ```php
-  'allowed_urls' => [],
-  ```
-
-  **Example**:
-
-  ```php
-  'allowed_urls' => ['/api/v1/health-check', '/support/contact'], // Specific API endpoints that remain accessible
-  ```
-
-## Commands
-
-### Toggle Maintenance Mode
-
-You can enable or disable maintenance mode using the following command:
-
-```bash
-php artisan maintenance:toggle {status}
-```
-
-Replace `{status}` with `true` to enable maintenance mode or `false` to disable it.
-
-### Example
-
-```bash
-php artisan maintenance:toggle true  # Enable maintenance mode
-php artisan maintenance:toggle false # Disable maintenance mode
-```
-
-## Helper Functions
-
-### Set Maintenance Mode
-
-You can set maintenance mode using the helper function:
+`config/maintenance.php`:
 
 ```php
-use Tsrgtm\MaintenanceMode\Helpers\setMaintenanceMode;
-
-setMaintenanceMode(true);  // Enable maintenance mode
-setMaintenanceMode(false); // Disable maintenance mode
+return [
+    'enabled' => env('MAINTENANCE_MODE', false),
+    'view' => 'maintenance::default',
+    'allowed_routes' => ['login', 'status'],
+    'allowed_urls' => ['/api/healthcheck'],
+];
 ```
 
-### Check Maintenance Mode Status
+| Option         | Type   | Default                | Description                               |
+| -------------- | ------ | ---------------------- | ----------------------------------------- |
+| enabled        | bool   | `false`                | Maintenance mode status                   |
+| view           | string | `maintenance::default` | Blade template path                       |
+| allowed_routes | array  | `[]`                   | Accessible route names during maintenance |
+| allowed_urls   | array  | `[]`                   | Accessible URL paths during maintenance   |
 
-You can check if maintenance mode is on or off using the helper function:
+---
+
+## 🎮 Usage
+
+### Artisan Commands
+
+```bash
+# Toggle maintenance mode
+php artisan maintenance:toggle true   # Enable
+php artisan maintenance:toggle false  # Disable
+
+# Check status
+php artisan maintenance:status
+```
+
+### Helper Functions
 
 ```php
-use Tsrgtm\MaintenanceMode\Helpers\isMaintenanceMode;
+use Tsrgtm\MaintenanceMode\Helpers\{setMaintenanceMode, isMaintenanceMode};
 
+// Enable maintenance mode
+setMaintenanceMode(true);
+
+// Check status
 if (isMaintenanceMode()) {
-    echo "The application is currently in maintenance mode.";
-} else {
-    echo "The application is running normally.";
+    // Maintenance mode logic
 }
 ```
 
-### Bypass Access for Users
+### Bypass Mechanism
 
-To allow certain users to bypass maintenance mode, you can add a method in your User model. Here’s how:
+Add to `User` model:
 
 ```php
-namespace App\Models;
-
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
 class User extends Authenticatable
 {
-    public function bypassMaintenance(): bool
+    public function canBypassMaintenance(): bool
     {
-        return $this->is_admin; // Modify as needed (e.g., check a role)
+        return $this->is_admin || $this->hasRole('maintenance-tech');
     }
-
 }
 ```
 
-When the middleware runs, it can check this method to determine if the user should have access during maintenance mode.
+---
 
-## License
+## 🎨 Customization
 
-This package is open-source and available under the MIT License.
+1. Create custom view:
 
-## Contributing
+```bash
+resources/views/vendor/maintenance/custom.blade.php
+```
 
-If you'd like to contribute to this package, please fork the repository and submit a pull request.
+2. Update configuration:
 
-## Author
+```php
+'view' => 'vendor.maintenance.custom',
+```
 
-This package is maintained by [Your Name](https://github.com/tsrgtm).
+**Example view**:
+
+```html
+@extends('layouts.app') @section('content')
+<div class="container">
+  <h1>🔧 Scheduled Maintenance</h1>
+  <p>We expect to be back by {{ $estimatedTime }}</p>
+  <div class="alert alert-info">Contact support: support@example.com</div>
+</div>
+@endsection
+```
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/new-feature`
+3. Commit changes: `git commit -m 'Add new feature'`
+4. Push to branch: `git push origin feature/new-feature`
+5. Open Pull Request
+
+---
+
+## 📜 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+## 👤 Author
+
+**Tusar Gautam**  
+[GitHub Profile](https://github.com/tsrgtm) • [Email](mailto:mailme@tusargautam.com.np)
